@@ -108,9 +108,171 @@ const getAllEvents = asyncHandler(async(req, res) => {
 
 })
 
+const getEventById = asyncHandler(async(req,res) => {
+    const { eventId } = req.params
+
+    if(!eventId) {
+        throw new ApiError(400, "Event Id is required")
+    }
+
+    const event = await Event.findById(eventId)
+    .populate("Committee", "name logo")
+    .populate("createdBy", "username fullName")
+
+    if(!event) {
+        throw new ApiError(404, "No such event exists")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            event,
+            "Event fetched successfully"
+        )
+    )
+})
+
+const updateEvent = asyncHandler(async(req,res) => {
+    const { eventId } = req.params
+
+    const {
+        title,
+        description,
+        registrationLink,
+        location,
+        eventType,
+        startDate,
+        endDate,
+    } = req.body;
+
+    if(!eventId) {
+        throw new ApiError(400, "Event ID is required");
+    }
+
+    const requester = await Member.findOne({user: req.user._id})
+
+    if (!requester) {
+        throw new ApiError(403, "Not a committee member");
+    }
+
+    if(!["head","core"].includes(requester.role)) {
+        throw new ApiError(403, "Not authorized to update events")
+    }
+
+    const event = await Event.findById(eventId)
+
+    if (!event) {
+        throw new ApiError(404, "Event not found");
+    }
+
+    if (
+        event.committee.toString() !==
+        requester.committee.toString()
+    ) {
+        throw new ApiError(403, "Unauthorized access");
+    }
+
+    const posterLocalPath = req.file?.path
+    let posterUrl;
+
+    if(posterLocalPath)
+    {
+        const poster = await uploadOnCloudinary(posterLocalPath)
+        
+        if(!poster?.url) {
+            throw new ApiError(400, "Poster upload failed")
+        }
+
+        posterUrl = poster.url
+    }
+
+    const updateData = {}
+
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (registrationLink) updateData.registrationLink = registrationLink;
+    if (location) updateData.location = location;
+    if (eventType) updateData.eventType = eventType;
+    if (startDate) updateData.startDate = startDate;
+    if (endDate) updateData.endDate = endDate;
+    if (posterUrl) updateData.poster = posterUrl;
+
+    if (Object.keys(updateData).length === 0) {
+        throw new ApiError(400, "No fields provided for update");
+    }
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+        eventId,
+        {
+            $set: updateData
+        },
+        {
+            new: true
+        }
+    )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            updatedEvent,
+            "Event Updated Successfully"
+        )
+    )
+
+
+})
+
+const deleteEvent = asyncHandler(async(req, res) => {
+    const { eventId } = req.params
+
+    if(!eventId) {
+        throw new ApiError(400, "Event ID is required");
+    }
+
+    const requester = await Member.findOne({user: req.user._id})
+
+    if (!requester) {
+        throw new ApiError(403, "Not a committee member");
+    }
+
+    if(requester.role !== "head") {
+        throw new ApiError(403, "Only Head can delete events")
+    }
+
+    const event = await Event.findById(eventId)
+
+    if (!event) {
+        throw new ApiError(404, "Event not found");
+    }
+
+    if (
+        event.committee.toString() !==
+        requester.committee.toString()
+    ) {
+        throw new ApiError(403, "Unauthorized access");
+    }
+
+    await Event.findByIdAndDelete(eventId)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            eventId,
+            "Event deleted successfully"
+        )
+    )
+})
 
 export {
     createEvent,
     getAllEvents,
-    getEventById
+    getEventById,
+    updateEvent,
+    deleteEvent
 }
