@@ -15,4 +15,4 @@ const eventRegistrationSchema=new Schema({
     }
 },{timestamps: true})
 
-export const EventRegistration=mongoose.model('EventRegistration',eventRegistrationSchema )
+export const EventRegistration = mongoose.model('EventRegistration',eventRegistrationSchema )

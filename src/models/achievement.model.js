@@ -21,4 +21,4 @@ const achievementSchema=new Schema({
     }
 },{timestamps: true})
 
-export const Achievement=mongoose.model('Achievement',achievementSchema)
+export const Achievement = mongoose.model('Achievement',achievementSchema)
