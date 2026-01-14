@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCommittee } from "../controllers/committee.controller.js";
+import { createCommittee, getAllCommittees, updateCommittee } from "../controllers/committee.controller.js";
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 import {upload} from "../middlewares/multer.middleware.js"
 
@@ -10,6 +10,13 @@ router.post(
     upload.single("logo"),
     createCommittee
 );
+
+router.route("/").get(getAllCommittees)
+router.patch(
+    "/:committeeId",
+    upload.single("logo"),
+    updateCommittee
+)
 
 
 export default router

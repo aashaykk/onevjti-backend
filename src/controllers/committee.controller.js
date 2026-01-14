@@ -79,14 +79,15 @@ const getAllCommittees = asyncHandler(async(req, res) => {
 })
 
 const updateCommittee = asyncHandler(async(req, res) => {
-    const {name, description, committeeId} = req.body
+    const { committeeId } = req.params
+    const {name, description} = req.body
 
     if(!committeeId) {
         throw new ApiError(400, "Committee ID is required");
     }
 
     if (req.user.role !== "admin") {
-        throw new ApiError(403, "Unauthorized to create committee");
+        throw new ApiError(403, "Unauthorized to update committee");
     }
 
     const logoLocalPath = req.file?.path
@@ -119,7 +120,7 @@ const updateCommittee = asyncHandler(async(req, res) => {
         { new: true }
     );
 
-    if(!updateCommittee) {
+    if(!updatedCommittee) {
         throw new ApiError(404, "Committee not found.")
     }
 

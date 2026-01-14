@@ -41,27 +41,27 @@ const createEvent = asyncHandler(async(req, res) => {
             ? req.files.poster[0].path
             : null;
 
-    if(!posterLocalPath) {
-        throw new ApiError(400, "Poster is required!")
+    if(posterLocalPath) {
+        const poster = await uploadOnCloudinary(posterLocalPath)
+    
+        if(!poster) {
+            throw new ApiError(400, "Poster upload failed");
+        }
+        poster = poster.url
+
     }
 
-    const poster = await uploadOnCloudinary(posterLocalPath)
-
-    if(!poster) {
-        throw new ApiError(400, "Poster upload failed");
-    }
 
     const event = await Event.create({
         title,
         description,
-        poster: poster.url,
         registrationLink,
         location,
         eventType,
         startDate,
         endDate,
         createdBy: req.user._id,
-        committee
+        committee,
     })
 
     return res
@@ -116,7 +116,7 @@ const getEventById = asyncHandler(async(req,res) => {
     }
 
     const event = await Event.findById(eventId)
-    .populate("Committee", "name logo")
+    .populate("committee", "name logo")
     .populate("createdBy", "username fullName")
 
     if(!event) {
@@ -145,7 +145,7 @@ const updateEvent = asyncHandler(async(req,res) => {
         eventType,
         startDate,
         endDate,
-    } = req.body;
+    } = req.body || {};
 
     if(!eventId) {
         throw new ApiError(400, "Event ID is required");
@@ -222,7 +222,6 @@ const updateEvent = asyncHandler(async(req,res) => {
             "Event Updated Successfully"
         )
     )
-
 
 })
 

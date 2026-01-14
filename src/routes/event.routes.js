@@ -8,7 +8,7 @@ const router = Router()
 router.route("/").post(verifyJWT,createEvent)
 router.route("/").get(getAllEvents)
 router.route("/:eventId").get(getEventById)
-router.route("/:eventId").patch(updateEvent)
-router.route("/:eventId").delete(deleteEvent)
+router.route("/:eventId").patch(verifyJWT,updateEvent)
+router.route("/:eventId").delete(verifyJWT,deleteEvent)
 
 export default router
