@@ -21,6 +21,7 @@ import committeeRouter from './routes/committee.routes.js'
 import memberRouter from './routes/member.routes.js'
 import eventRegistrationRouter from './routes/eventRegistration.routes.js'
 import galleryRouter from './routes/gallery.routes.js'
+import achievementRouter from './routes/achievement.routes.js'
 
 //routes declaration
 app.use("/api/v1/users", userRouter)
@@ -29,5 +30,6 @@ app.use("/api/v1/committees", committeeRouter)
 app.use("/api/v1/members", memberRouter)
 app.use("/api/v1/event-registrations", eventRegistrationRouter)
 app.use("/api/v1/gallery", galleryRouter)
+app.use("/api/v1/achievement", achievementRouter)
 
 export { app }

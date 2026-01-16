@@ -4,15 +4,15 @@ import {verifyJWT} from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
-router.route("/achievements/:committeeId").post(
+router.route("/:committeeId").post(
     verifyJWT,
     addAchievement
 )
 
-router.route("/achievements/:committeeId").get(getAchievement)
+router.route("/:committeeId").get(getAchievement)
 
 router
-    .route("/achievements/:achievementId")
+    .route("/:achievementId")
     .delete(verifyJWT, deleteAchievement)
 
 export default router

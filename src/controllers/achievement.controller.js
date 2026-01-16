@@ -6,10 +6,7 @@ import { Member } from "../models/member.model.js";
 import { Committee } from "../models/committee.model.js";
 
 const addAchievement=asyncHandler(async(req,res)=>{
-    const { committeeId }=req.params
-    if(!committeeId){
-        throw new ApiError(400, "Committee ID is required")
-    }
+    const { committeeId } = req.params
     const {
         title,
         description,
@@ -17,25 +14,34 @@ const addAchievement=asyncHandler(async(req,res)=>{
         winners 
     } = req.body;
 
-    if(!title){
-        throw new ApiError(400, "Title is required") 
-    }
-    if(!description){
-        throw new ApiError(400, "Description is required")
-    }
 
-    const committe=await Committee.findById(committeeId)
-    if(!committe){
+    if(!title || !description){
+        throw new ApiError(400, "Required Fields are not filled") 
+    }
+    const requester = await Member.findOne({ user : req.user._id })
+    
+    if(!requester) {
+            throw new ApiError(403, "Unauthorized Access")
+        }
+    
+    if(!["head","core"].includes(requester.role)) {
+            throw new ApiError(403, "Must me a head or core member of the committee")
+    }
+    if(!committeeId){
+        throw new ApiError(400, "Committee ID is required")
+    }
+    const committee = await Committee.findById(committeeId)
+
+    if(!committee){
         throw new ApiError(404, "Committee not found")
     }
 
-    const member = await Member.findOne({ 
-        user: req.user._id ,
-        committee: committeeId
-    });
-    if(!member) {
-        throw new ApiError(403, "User is not part of any committee");
+    if(
+        requester.committee.toString() !== committee._id.toString()
+    ) {
+        throw new ApiError(403, "Unauthorized Access")
     }
+
 
     const achievements=await Achievement.create({
         committee: committeeId,
@@ -67,33 +73,46 @@ const getAchievement=asyncHandler(async(req,res)=>{
     )
 })
 
-const deleteAchievement=asyncHandler(async(req,res)=>{
-    const { achievementId } = req.params
-    if(!achievementId){
-        throw new ApiError(400, "Achievement ID is required")
+const deleteAchievement = asyncHandler(async (req, res) => {
+    const { achievementId } = req.params;
+
+    if (!achievementId) {
+        throw new ApiError(400, "Achievement ID is required");
     }
 
-    const achievement=await Achievement.findById(achievementId)
-    if(!achievement){
-        throw new ApiError(404, 'Achievement not found')
+    const requester = await Member.findOne({ user: req.user._id });
+
+    if (!requester) {
+        throw new ApiError(403, "Not a committee member");
     }
 
-    const member=await Member.findOne({
-        user: req.user._id,
-        committee: achievement.committee
-    })
-
-    if(!member){
-        throw new ApiError(403, "You are NOT authorized to delete this achievement")
+    if (!["head", "core"].includes(requester.role)) {
+        throw new ApiError(403, "Only head or core members can delete achievements");
     }
 
-    await Achievement.findByIdAndDelete(achievementId);
+    const achievement = await Achievement.findById(achievementId);
+
+    if (!achievement) {
+        throw new ApiError(404, "Achievement not found");
+    }
+
+    if (
+        achievement.committee.toString() !==
+        requester.committee.toString()
+    ) {
+        throw new ApiError(403, "Unauthorized access");
+    }
+
+    await achievement.deleteOne();
 
     return res.status(200).json(
-        new ApiResponse(200, null, "Achievement deleted successfully")
-    )
-
-})
+        new ApiResponse(
+            200,
+            {},
+            "Achievement deleted successfully"
+        )
+    );
+});
 
 export {
     addAchievement,
