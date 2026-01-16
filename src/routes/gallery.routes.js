@@ -5,15 +5,15 @@ import {verifyJWT} from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
-router.route("/gallery/:eventId").post(
+router.route("/:eventId").post(
     verifyJWT,
     upload.single("image"),
     addGalleryItem
 )
 
-router.route("/gallery/:eventId").get(getGalleryItems)
+router.route("/:eventId").get(getGalleryItems)
 
-router.route("/gallery/:galleryId")
+router.route("/:galleryId")
 .delete(
     verifyJWT,
     deleteGalleryItem
