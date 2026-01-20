@@ -14,7 +14,7 @@ A role-based backend system for managing committees, events, registrations, gall
 User → Member → Committee → Event → Registration
 
 ## Tech Stack
-Node.js, Express.js, MongoDB, JWT, Cloudinary
+Node.js, Express.js, MongoDB, JWT, Cloudinary, Bcrypt
 
 ## API Documentation
 Postman Docs: https://aashaykk-9007561.postman.co/workspace/Aashay-Kamble's-Workspace~a5f09b18-b69c-4fd5-88ca-f5e065dcd68b/documentation/50989185-951d3551-1abd-41ce-8ba6-a837c476508e
